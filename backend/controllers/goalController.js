@@ -32,22 +32,22 @@ const setGoal = async (req, res, next) => {
 // @desc    Update goal
 // @route   PUT /api/goals/:id
 // @access  Private
-const updateGoal = async (req, res, next) => {
+const updateGoal = async (req, res) => {
   try {
     const id = req.params.id;
-    const text = req.body;
+    const {text} = req.body;
 
     if (!text) {
       throw new Error('Please provide some text');
     }
 
-    const updatedGoal = await Goal.findByIdAndUpdate(id, text);
+    const updatedGoal = await Goal.findByIdAndUpdate(id, {text});
 
     if (!updateGoal) {
       throw new Error('No goal with provided ID');
     }
 
-    res.json(200).json(updatedGoal);
+    res.status(200).json(updatedGoal);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -56,7 +56,21 @@ const updateGoal = async (req, res, next) => {
 // @desc    Delete goal
 // @route   DELETE /api/goals/:id
 // @access  Private
-const deleteGoal = async (req, res, next) => {};
+const deleteGoal = async (req, res, next) => {
+  const { id } = req.params
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({error: 'Invalid goal id'})
+  }
+
+  const goal = await Goal.findOneAndDelete({_id: id})
+
+  if (!goal) {
+    return res.status(400).json({error: 'Goal not found'})
+  }
+
+  res.status(200).json(goal)
+};
 
 module.exports = {
   getGoals,
