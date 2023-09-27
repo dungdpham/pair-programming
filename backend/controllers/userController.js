@@ -23,7 +23,7 @@ function createJWT(payload) {
   const secretKey = process.env.JWT_SECRET;
 
   // Sign the JWT with the payload and secret key
-  const token = jwt.sign(payload, secretKey);
+  const token = jwt.sign(payload, secretKey, { expiresIn: '1d' });
 
   return token;
 }
@@ -36,13 +36,13 @@ const registerUser = async (req, res, next) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      throw Error('User must have name, email and password!');
+      throw new Error('User must have name, email and password!');
     }
 
     const exist = await User.findOne({ email });
 
     if (exist) {
-      throw Error('Email already registered');
+      throw new Error('Email already registered');
     }
 
     const hashedPassword = await hashPassword(password);
@@ -66,19 +66,19 @@ const loginUser = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      throw Error('Provide both email and password to login');
+      throw new Error('Provide both email and password to login');
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      throw Error('No user with email provided');
+      throw new Error('No user with email provided');
     }
 
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) {
-      throw Error('Invalid password');
+      throw new Error('Invalid password');
     }
 
     const token = createJWT({ id: user.id, name: user.name });
