@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const validator = require('validator');
 const User = require('../models/userModel');
 
 async function hashPassword(password) {
@@ -37,6 +38,14 @@ const registerUser = async (req, res, next) => {
 
     if (!name || !email || !password) {
       throw new Error('User must have name, email and password!');
+    }
+
+    if (!validator.isEmail(email)) {
+      throw new Error('Email not valid');
+    }
+
+    if (!validator.isStrongPassword(password)) {
+      throw new Error('Password not strong enough');
     }
 
     const exist = await User.findOne({ email });
